@@ -77,15 +77,15 @@ The same as any perl modules:
 
     perl Makefile.PL
     make
-	make test
-	make install
+    make test
+    make install
 
 The Makefile.PL script will check the version of your perl, and if it is
 newer than 5.005, it rewrites the ParseLog.pm file for the 5.005-compatible
 version. For some reasons, if you need to rewrite the ParseLog.pm back to
 the distributed version (5.004-compatible), run the command (note the option)
 
-	perl Makefile.PL -r
+    perl Makefile.PL -r
 
 Running this will rewrite the ParseLog.pm to the 5.004 version. 
 
@@ -95,12 +95,19 @@ DOCUMENTATION
 If you want to read the manpage before you install, you can use perldoc to
 read the manpage from the ParseLog.pm file, like:
 
-	perldoc -F ParseLog.pm
+    perldoc -F ParseLog.pm
+
+
+TO DO
+
+- Add the support for HTTP header log (%{<header>}x) directive 
+  in LogFormat (this actually should be considered as a bug)
+- Add methods that return more analytical data
 
 
 CURRENT VERSION
 
-Current version is 1.01 (10/01/1998)
+Current version is 1.02 (10/17/1998)
 
 
 AUTHOR

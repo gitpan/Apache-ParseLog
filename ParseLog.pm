@@ -18,7 +18,7 @@ package Apache::ParseLog;
 require 5.004;
 use Carp;
 use vars qw($VERSION);
-$VERSION = "1.01";
+$VERSION = "1.02";
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -1267,8 +1267,10 @@ sub scanLog {
                 my($file) = $2;
                 my($proto) = $3;
                 $method{$method}++;
-                $file =~ s#\?(.+)$##;        # trim query_string
-                $querystring{$1}++ if $1;    # query string
+                if ($file =~ m#\?(.+)$#) {
+                    $querystring{$1}++;    # query string
+                }
+                $file =~ s#\?.+$##;        # trim query_string
                 $file =~ s#/\./#/#g;         # same-dir duplicates
                 $file =~ s#/\s+?/\.\./#/#g;  # same-upper-dir duplicates
                 $file{$file}++;
@@ -1277,8 +1279,6 @@ sub scanLog {
             }
             # URL
             if ($URL) {
-                $URL =~ s#\?(.+)$##;       # trim query_string
-                $querystring{$1}++ if $1;  # query string
                 $url{$URL}++;
                 $FILE = $URL;
             }
