@@ -16,7 +16,7 @@ $test++;
 
 # 2 version
 my($version) = $base->Version();
-$version eq "1.00" ? print "ok $test\n": print "not ok $test\n";
+$version eq "1.01" ? print "ok $test\n": print "not ok $test\n";
 $test++;
 
 # 3 serverroot

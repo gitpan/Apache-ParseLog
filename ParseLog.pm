@@ -18,7 +18,7 @@ package Apache::ParseLog;
 require 5.004;
 use Carp;
 use vars qw($VERSION);
-$VERSION = "1.00";
+$VERSION = "1.01";
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -115,9 +115,9 @@ see perlop(1) and perlre(1) manpages.
 local($HOST, $LOGIN, $DATETIME, $REQUEST, $OSTATUS, $LSTATUS, $BYTE, $FILENAME, $ADDR, $PORT, $PROC, $SEC, $URL, $HOSTNAME, $REFERER, $UAGENT);
 
 my(%COUNTRY_BY_CODE) = map { 
-	chomp; 
-	my(@line) = split(/:/); 
-	$line[0] => $line[1] 
+    chomp; 
+    my(@line) = split(/:/); 
+    $line[0] => $line[1] 
 } <DATA>;
 
 my(%STATUS_BY_CODE) = (
@@ -429,12 +429,12 @@ sub populate {
             $httpport = $1;
         } elsif ($line =~ /^LogFormat\s+"(.+)"\s+(\w+)$/) {
             $format{$2} = $1;
-		}
+        }
         unless ($VIRTUAL) {        # check only when $VIRTUAL == 0
-        	if ($line =~ /^ServerName\s+(.+)$/) { 
-            	$servername = $1;
-        	} elsif ($line =~ /^ServerAdmin\s+(.+)$/) { 
-           		$serveradmin = $1;
+            if ($line =~ /^ServerName\s+(.+)$/) { 
+                $servername = $1;
+            } elsif ($line =~ /^ServerAdmin\s+(.+)$/) { 
+                   $serveradmin = $1;
             } elsif ($line =~ /^TransferLog\s+(.+)$/) {
                 $transferlog = $1; 
             } elsif ($line =~ /^ErrorLog\s+(.+)$/) {
@@ -453,9 +453,9 @@ sub populate {
         }
         if (defined($virtualhost)) {
             if ($line =~ m#^<VirtualHost\s+(.+)?>#) {
-				if ($1 =~ /$virtualhost/i) {   # if matches, 0
-                	$VIRTUAL = 0;
-				}
+                if ($1 =~ /$virtualhost/i) {   # if matches, 0
+                    $VIRTUAL = 0;
+                }
             } elsif ($line =~ m#^</VirtualHost>#) {
                 $VIRTUAL = 1;                  # if matches, 0
             }
@@ -474,34 +474,34 @@ sub populate {
     $arg{'serveradmin'} = $serveradmin || undef;
     if ($transferlog) {
         if ($transferlog !~ m#^/#) { 
-			$transferlog = "$serverroot/$transferlog" 
-		} elsif ($transferlog =~ m#\|#) { 
-			undef $transferlog 
-		}
+            $transferlog = "$serverroot/$transferlog" 
+        } elsif ($transferlog =~ m#\|#) { 
+            undef $transferlog 
+        }
     }
     $arg{'transferlog'} = $transferlog;
     if ($errorlog) {
         if ($errorlog !~ m#^/#) { 
-			$errorlog = "$serverroot/$errorlog" 
-		} elsif ($errorlog =~ m#\|#) { 
-			undef $errorlog 
-		}
+            $errorlog = "$serverroot/$errorlog" 
+        } elsif ($errorlog =~ m#\|#) { 
+            undef $errorlog 
+        }
     }
     $arg{'errorlog'} = $errorlog;
     if ($agentlog) {
         if ($agentlog !~ m#^/#) { 
-			$agentlog = "$serverroot/$agentlog" 
-		} elsif ($agentlog =~ m#\|#) { 
-			undef $agentlog 
-		}
+            $agentlog = "$serverroot/$agentlog" 
+        } elsif ($agentlog =~ m#\|#) { 
+            undef $agentlog 
+        }
     }
     $arg{'agentlog'} = $agentlog;
     if ($refererlog) {
         if ($refererlog !~ m#^/#) { 
-			$refererlog = "$serverroot/$refererlog" 
-		} elsif ($refererlog =~ m#\|#) { 
-			undef $refererlog 
-		}
+            $refererlog = "$serverroot/$refererlog" 
+        } elsif ($refererlog =~ m#\|#) { 
+            undef $refererlog 
+        }
     }
     $arg{'refererlog'} = $refererlog;
     $customlog = {
@@ -816,9 +816,8 @@ sub getTransferLog {
     my($logfile) = $this->{'transferlog'};
     croak "$METHOD: $logfile does not exist. Exiting " unless -e $logfile;
     my($FORMAT) = '(\\S+)\\s(\\S+)\\s(\\S+)\\s\\[(\\d{2}/\\w+/\\d{4}\\:\\d{2}\\:\\d{2}\\:\\d{2}\\s+.+?)\\]\\s\\"(\\w+\\s\\S+\\s\\w+\\/\\d+\\.\\d+)\\"\\s(\\d+)\\s(\\d+|-)';
-    my($regex) = $FORMAT;
     my(@elements) = qw/HOST LOGIN USER DATETIME REQUEST LSTATUS BYTE/;
-    return scanLog($this, $logfile, $regex, @elements);
+    return scanLog($this, $logfile, $FORMAT, @elements);
 }
 
 #######################################################################
@@ -843,9 +842,8 @@ sub getRefererLog {
     my($logfile) = $this->{'refererlog'};
     croak "$METHOD: $logfile does not exist. Exiting " unless -e $logfile;
     my($FORMAT) = '(\\S+)\\s\\-\\>\\s(\\S+)';
-    my($regex) = $FORMAT;
     my(@elements) = qw/REFERER URL/;
-    return scanLog($this, $logfile, $regex, @elements);
+    return scanLog($this, $logfile, $FORMAT, @elements);
 }
 
 #######################################################################
@@ -870,9 +868,8 @@ sub getAgentLog {
     my($logfile) = $this->{'agentlog'};
     croak "$METHOD: $logfile does not exist. Exiting " unless -e $logfile;
     my($FORMAT) = '(.+)';
-    my($regex) = $FORMAT;
     my(@elements) = qw/UAGENT/;
-    return scanLog($this, $logfile, $regex, @elements);
+    return scanLog($this, $logfile, $FORMAT, @elements);
 }
 
 #######################################################################
@@ -1063,9 +1060,8 @@ sub getCustomLog {
         $FORMAT =~ s/$match/$regex[$#regex]/;
     }
     $FORMAT =~ s/\s/$space/g;
-    my($regex) = $FORMAT;
     # Parse the log finally
-    return scanLog($this, $logfile, $regex, @elements);
+    return scanLog($this, $logfile, $FORMAT, @elements);
 }
 
 #######################################################################
@@ -1074,7 +1070,7 @@ sub getCustomLog {
 sub scanLog {
     my($this) = shift;    # package
     my($logfile) = shift; # path to the log
-    my($regex) = shift;   # regex
+    my($FORMAT) = shift;   # regex
     my(@elements) = @_;   # array containing what's in the regex
     # create an array containing the uc name of placeholders
     my($hostswitch) = 1;    # off with host defined
@@ -1174,7 +1170,11 @@ sub scanLog {
     my(%platform);           # platforms only
     my(%browserbyos);        # browsers w/ platforms
     my(%hit);                # Total number of hits (lines)
-         ### Routine
+    ### Routine
+    if ((scalar(@elements) == 1) && ($elements[0] eq "UAGENT")) { 
+        $FORMAT =~ s#\?## 
+    }
+    my($regex) = $FORMAT;
     my($line);
     my($fh) = openFile($logfile);
     while (defined($line = <$fh>)) { 
@@ -1187,7 +1187,7 @@ sub scanLog {
         }
         my($date, $time, $method, $file, $proto);
         ### create reports ###
-		{ # HOST RELATED BLOCK
+        { # HOST RELATED BLOCK
             # HOST
             $host{$HOST}++ if $HOST;
             # HOSTNAME
@@ -1195,23 +1195,23 @@ sub scanLog {
             my($domain) = ($HOST ? $HOST : $HOSTNAME);
             # (TOP|SEC)DOMAIN
             if ($domain) {
-				if ($domain !~ /^\d{1,3}(?:\.\d{1,3}){3}$/) {
+                if ($domain !~ /^\d{1,3}(?:\.\d{1,3}){3}$/) {
                     if ($domain =~ m/\.([A-Za-z0-9\-]+\.)(\w+)$/) {
-        				my($secdomain) = $1;
-                    	my($topdomain) = $2;
-                    	$topdomain{$topdomain}++;
-                    	$secdomain = $secdomain . $topdomain;
-                    	$secdomain{$secdomain}++;
-        			} else {
-        				$topdomain{$domain}++;
-        				$secdomain{$domain}++;
-        			}
+                        my($secdomain) = $1;
+                        my($topdomain) = $2;
+                        $topdomain{$topdomain}++;
+                        $secdomain = $secdomain . $topdomain;
+                        $secdomain{$secdomain}++;
+                    } else {
+                        $topdomain{$domain}++;
+                        $secdomain{$domain}++;
+                    }
                 } else {
                     $topdomain{'unknown'}++;
                     $secdomain{'unknown'}++;
                 }
-    		}
-		}
+            }
+        }
         # LOGIN
         $login{$LOGIN}++ if $LOGIN;
         # USER
@@ -1280,10 +1280,10 @@ sub scanLog {
                 $URL =~ s#\?(.+)$##;       # trim query_string
                 $querystring{$1}++ if $1;  # query string
                 $url{$URL}++;
-				$FILE = $URL;
+                $FILE = $URL;
             }
             # FILE
-			$FILE = $FILENAME unless $FILE;
+            $FILE = $FILENAME unless $FILE;
             # SEC
             SEC: if ($SEC) {
                 last SEC unless $FILE;
@@ -1315,8 +1315,8 @@ sub scanLog {
                 my($ref) = (($refered) ? "$REFERER -> $refered" : $REFERER);
                 $refererdetail{$ref}++;
                 if ($REFERER =~ m#http://(\S+?)[/?]#) { $referer{$1}++ }
-				elsif ($REFERER =~ m#^-$#) { $referer{'bookmark'}++ }
-				else { $referer{'unknown'}++ }
+                elsif ($REFERER =~ m#^-$#) { $referer{'bookmark'}++ }
+                else { $referer{'unknown'}++ }
             }
         } # END FILE RELATED BLOCK 
         # UAGENT
@@ -2998,7 +2998,7 @@ Increase the performance (speed).
 
 =head1 VERSION
 
-Apache::ParseLog 1.00 (09/28/1998).
+Apache::ParseLog 1.01 (10/01/1998).
 
 =head1 AUTHOR
 
